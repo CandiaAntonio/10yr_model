@@ -1,0 +1,68 @@
+---
+title: "Historical 10-year Treasury Model"
+author: "Antonio Candia"
+date: "3/5/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Objetivo
+
+Este es un documento R Markdown, cuyo objetivos son:
+
+1. Presentar un modelo de "fair value" histórico de la tasa del tesoro de 10 años para EE.UU. El modelo fue desarrollado por Bloomberg Intelligence, pero lo presentamos en una manera distinta al típico modelo desarrollado en una hoja de cálculo excel, donde una de las principales dificultades es que los resultados sean reproducibles.  
+
+2. Documentar el proceso del modelado para ser compartido con otros miembros del equipo para futuras mejoras.  
+
+3. Introducir algunas herramientas en R del ecosistema Tydiverse.  
+
+## Variables
+
+Las variables a ser utilizadas son:
+
+|    Variable   |                                          Descripción                                          |             Ticker             |  Campo  |
+|:-------------:|:---------------------------------------------------------------------------------------------:|:------------------------------:|:-------:|
+| 10_yr_yield_% | Bloomberg gen 10yr goverment yield                                                            | GT10 Govt                      | PX_LAST |
+| gdp_real      | GDP US Chained 2012 Dollars QoQ SAAR (seasonally adjusted annual rate)                        | GDP CQOQ Index                 | PX_LAST |
+| cpi           | US CPI Urban Consumers YoY NSA                                                                | CPI YOY Index                  | PX_LAST |
+| fed_target    | Federal Funds Target Rate - Upper Bound                                                       | FDTR Index                     | PX_LAST |
+| fed_bs_gdp    | Fed B/S % GDP (GDP US Nominal Dollars SAAR/FOF Monetary Authority Total Financial Assets NSA) | GDP CUR$ Index, MONATFAS Index | PX_LAST |
+| fed_bias      | -1 is inclination to ease, 0 is to keep rates where they are, +1 is to hike                   | NA                             |      NA |
+## Librerias utilizadas
+
+Se cargan las librerias a ser utilizadas:
+
+```{r Libraries, echo=TRUE, message=FALSE, warning=FALSE}
+# Standard
+library(readxl)
+library(tidyverse)
+library(tidyquant)
+
+# Modeling
+library(parsnip)
+
+# Preprocessing & Sampling
+library(recipes)
+library(rsample)
+
+# Modeling Error Metrics
+library(yardstick)
+```
+
+## Data Inicial
+
+La data inicial comprende 865 meses desde Enero de 1947 a Enero de 2019 recopilados por BI
+
+Utilizamos la libreria readxl para cargar los datos
+
+```{r}
+data_inicial_tbl <- read_excel("data.xlsx")
+
+data_inicial_tbl %>% glimpse()
+
+```
+
+

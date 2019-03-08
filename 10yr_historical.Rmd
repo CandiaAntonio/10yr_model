@@ -5,10 +5,6 @@ date: "3/5/2019"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
-
 ## Objetivo
 
 Este es un documento R Markdown, cuyo objetivos son:
@@ -25,7 +21,7 @@ Las variables a ser utilizadas son:
 
 |    Variable   |                                          Descripción                                          |             Ticker             |  Campo  |
 |:-------------:|:---------------------------------------------------------------------------------------------:|:------------------------------:|:-------:|
-| 10_yr_yield_% | Bloomberg gen 10yr goverment yield                                                            | GT10 Govt                      | PX_LAST |
+| ten_yr_yield | Bloomberg gen 10yr goverment yield                                                            | GT10 Govt                      | PX_LAST |
 | gdp_real      | GDP US Chained 2012 Dollars QoQ SAAR (seasonally adjusted annual rate)                        | GDP CQOQ Index                 | PX_LAST |
 | cpi           | US CPI Urban Consumers YoY NSA                                                                | CPI YOY Index                  | PX_LAST |
 | fed_target    | Federal Funds Target Rate - Upper Bound                                                       | FDTR Index                     | PX_LAST |
@@ -56,13 +52,35 @@ library(yardstick)
 
 La data inicial comprende 865 meses desde Enero de 1947 a Enero de 2019 recopilados por BI
 
-Utilizamos la libreria readxl para cargar los datos
+```{r echo=TRUE}
+# Lectura del archivo que contiene la data
+data_tbl <- read_excel("data.xlsx") %>% 
+    mutate(fed_bs_gdp = fed_bs_gdp*100)
 
-```{r}
-data_inicial_tbl <- read_excel("data.xlsx")
-
-data_inicial_tbl %>% glimpse()
+# Seleccion de variables numéricas y estadisticas descriptivas
+data_tbl %>% 
+    select(-date,-fed_bias) %>% 
+    summary() 
+    
 
 ```
 
+```{r echo=TRUE}
+#Tranbsformamos la data de wide a long format para poder graficar todas las variables
+
+data_long_tblt <- data_tbl %>% 
+    select(-fed_bias) %>% 
+    gather(key = "key", value = "value", -date)
+   
+```
+
+Inspeccion gráfica
+
+```{r}
+data_long_tblt %>% 
+    ggplot(aes(x = date, y = value)) +
+    geom_line() +
+    facet_wrap(~key, scales = "free") + 
+    theme_tq()
+```
 
